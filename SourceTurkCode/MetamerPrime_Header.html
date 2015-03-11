@@ -187,13 +187,11 @@ function PressedObject() {
 
 function NextTrial(Correct) {
 	trialRunning = false;
-	
-	if (Correct==0){
-	alert('Please be accurate, then fast!')
-	}
-	
-	
+
 	setTimeout(function() {
+		if (Correct==0){
+		alert('Please be accurate, then fast!')
+		}
 		if (currentTrial+2 < nTrials) {
 		$('#startTrial').show();
 		currentTrial++;
@@ -285,7 +283,7 @@ function SendToServer(id, curData) {
 #startTrial {
 	position: absolute;
 	top: 180px;
-	left: 550px;
+	left: 350px;
 	font-weight: bold;
 	color: white;
 	font-size: 16pt;
