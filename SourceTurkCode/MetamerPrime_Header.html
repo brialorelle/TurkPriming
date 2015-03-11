@@ -193,7 +193,6 @@ function NextTrial(Correct) {
 	}
 	
 	
-	trialJitter=500+(Math.random()*500); // adds 500-1000ms trial jitter
 	setTimeout(function() {
 		if (currentTrial+2 < nTrials) {
 		$('#startTrial').show();
@@ -203,7 +202,7 @@ function NextTrial(Correct) {
 		$('#thanks').show();
 		$('#experiment').hide();
 	}
-	}, trialJitter);
+	}, 500);
 
 
 }
@@ -213,13 +212,13 @@ function StartTrial() {
 		return;
 	}
 	
+	$('#startTrial').hide();
     trialRunning = true;
 	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);	
-	$('#startTrial').hide();
 	$('#fixation').show();
 	
 	
-	trialJitter=1000+(Math.random()*500); // adds 1000-1500ms trial jitter with fixation cross
+	trialJitter=1000+(Math.random()*500); // adds 1000-1500ms trial jitter with fixation cross, after which show images
 	setTimeout(function() {
 	    $('#fixation').hide();
 	    $('#t' + trialOrder[currentTrial+1] + '_filenameImg').show();
@@ -252,7 +251,7 @@ function SendToServer(id, curData) {
 <style>
 #experiment {
 	font-family: Arial, Helvetica;
-	width: 1000px;
+	width: 1200px;
 	height: 800px;
 	margin: 30px;
 }
@@ -286,7 +285,7 @@ function SendToServer(id, curData) {
 #startTrial {
 	position: absolute;
 	top: 180px;
-	left: 180px;
+	left: 550px;
 	font-weight: bold;
 	color: white;
 	font-size: 16pt;
@@ -299,6 +298,7 @@ function SendToServer(id, curData) {
 #fixation{
 	display: none;
 }
+
 </style>
 
 <div id="experiment">
