@@ -187,13 +187,15 @@ function PressedObject() {
 
 function NextTrial(Correct) {
 	trialRunning = false;
-
-
+	
 	if (Correct==0){
 	alert('Please be accurate, then fast!')
 	}
-
-	if (currentTrial+2 < nTrials) {
+	
+	
+	trialJitter=500+(Math.random()*500); // adds 500-1000ms trial jitter
+	setTimeout(function() {
+		if (currentTrial+2 < nTrials) {
 		$('#startTrial').show();
 		currentTrial++;
 	} else {
@@ -201,6 +203,9 @@ function NextTrial(Correct) {
 		$('#thanks').show();
 		$('#experiment').hide();
 	}
+	}, trialJitter);
+
+
 }
 
 function StartTrial() {
@@ -253,7 +258,7 @@ function SendToServer(id, curData) {
 
 #container {
 	position: relative;
-	background: gray;
+	background-color: rgb(130,130,130);
 	width: 1200px;
 	height: 800px;
 	margin: 30px;
@@ -262,7 +267,7 @@ function SendToServer(id, curData) {
 .displays0 {
 	position: absolute;
 	display: none;
-	top: 200px;
+	top: 100px;
 	width: 600px;
 	height: 600px;
 	left: 0px;
@@ -271,7 +276,7 @@ function SendToServer(id, curData) {
 .displays1 {
 	position: absolute;
 	display: none;
-	top: 200px;
+	top: 100px;
 	width: 600px;
 	height: 600px;
 	right: 0px;
