@@ -212,6 +212,10 @@ function StartTrial() {
 	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);	
 	$('#startTrial').hide();
 	
+	trialJitter=500+(Math.random()*1000); // adds 300-800ms trial jitter
+	setTimeout(function() {
+	}, trialJitter);	
+	
 	setTimeout(function() {
 	    $('#t' + trialOrder[currentTrial+1] + '_filenameImg').show();
 		$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').show();
