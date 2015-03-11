@@ -1,0 +1,363 @@
+function [CurrImages]=makeScreenShots(currFolder)
+
+
+% STEP 1: BASIC SETUP
+% =========================================================================
+
+% set random number seed (based on clock)
+try
+    RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+catch
+    rand('state',sum(100*clock)); % set random seed based on clock
+end
+
+% experiment information
+prefs.dateStr             = datestr(now, 30);
+prefs.name                = 'makescreenshots';
+
+% open the main screen
+window = openMainScreen;
+
+
+TestWords={'BABOON' 'BISON' 'CHEETAH' 'COBRA' 'DOLPHIN' 'DONKEY' 'FERRET' 'KITTEN' 'LEMUR' 'LOBSTER' 'OSTRICH' 'PANDA'  'PARROT' 'RABBIT' 'RACCOON' 'RHINO' 'SEAGULL' 'SPIDER'  'TIGER' 'TURTLE'
+; 'BATHTUB' 'BINDER' 'CANDLE' 'CANOE' 'COMPASS' 'EASEL' 'LADDER' 'LADLE' 'LIGHTER' 'MAILBOX' 'MIRROR' 'PERFUME' 'PIANO' 'PODIUM' 'RAZOR' 'SANDAL' 'SHOVEL'  'STAPLER' 'TABLE' 'TRACTOR'}
+
+
+% set font size
+Screen(window.onScreen,'TextSize',36)
+categories={'Animals','Objects'}
+for c=1:2
+  category=categories{c};
+for item=1:size(TestWords,2)
+    
+    
+    
+    moveBack=length(TestWords{c,item})*10;
+    
+    % draw image
+    DrawFormattedText(window.onScreen, TestWords{c,item},window.centerX-moveBack,window.centerY-20)
+    imageArray = Screen('GetImage', window.onScreen, [], 'backBuffer');
+   
+    Screen('Flip', window.onScreen);
+    
+    imwrite(imageArray, [category '_' num2str(item) '_WordScreenshots.jpg'], 'jpg');
+    
+
+
+    
+
+end % END OF TRIAL LOOP
+end
+
+
+
+% STEP 8: CLEAN UP
+% =========================================================================
+
+
+Screen('Flip', window.onScreen);
+fclose('all');
+sca;
+
+
+
+% =========================================================================
+%                               SUBFUNCTIONS
+% =========================================================================
+
+
+% =========================================================================
+function sid = getSubjectID(prefs)
+
+clc;
+commandwindow;
+sid = input('enter subject ID: ', 's');     % get sid fropm user
+sid(sid==' ')=[];
+allsids = dir(fullfile(pwd,'*.xls')); % get all existing sids
+[sidnames{1:length(allsids)}]=deal(allsids.name); % deal file names into array "sidnames"
+
+% loop until you get a unique sid from the user
+while (any(strcmp(sidnames,[prefs.name '_' sid '.xls'])))
+    disp('Sorry, that ID already exist, please enter a new subject ID.');
+    sid = input('enter subject ID: ', 's');
+end
+
+% =========================================================================
+
+
+% =========================================================================
+function window = openMainScreen
+
+% display requirements (resolution and refresh rate)
+window.requiredRes  = [];
+window.requiredRefreshrate = [];
+
+%basic drawing and screen variables
+window.gray        = 130;  %%this is actually important
+window.black       = 0;
+window.white       = 255;
+window.fontsize    = 32;
+window.bcolor      = [130 130 130];
+
+%open main screen, get basic information about the main screen
+screens=Screen('Screens'); % how many screens attached to this computer?
+% window.screenNumber=max(screens); % use highest value (usually the external monitor)
+window.screenNumber=0; 
+window.onScreen=Screen('OpenWindow',window.screenNumber, 0, [0 0 400 400], 32, 2); % open main screen
+[window.screenX, window.screenY]=Screen('WindowSize', window.onScreen); % check resolution
+window.screenDiag = sqrt(window.screenX^2 + window.screenY^2); % diagonal size
+window.screenRect  =[0 0 window.screenX window.screenY]; % screen rect
+window.centerX = window.screenRect(3)*.5; % center of screen in X direction
+window.centerY = window.screenRect(4)*.5; % center of screen in Y direction
+
+% set some screen preferences
+[sourceFactorOld, destinationFactorOld]=Screen('BlendFunction', window.onScreen, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+Screen('Preference','SkipSyncTests', 1);
+Screen('Preference','VisualDebugLevel', 0);
+
+% get screen rate
+[window.frameTime nrValidSamples stddev] =Screen('GetFlipInterval', window.onScreen, 60);
+window.monitorRefreshRate=1/window.frameTime;
+
+% paint mainscreen bcolor, show it
+Screen('FillRect', window.onScreen, window.bcolor);
+Screen('Flip', window.onScreen);
+Screen('FillRect', window.onScreen, window.bcolor);
+Screen('TextSize', window.onScreen, window.fontsize);
+
+% =========================================================================
+
+
+
+% =========================================================================
+function drawCenterText(textStr, window, x, y, color);
+
+[normBoundsRect, offsetBoundsRect]=Screen('TextBounds', window.onScreen, textStr);
+newRect = CenterRectOnPoint(normBoundsRect,x,y);
+Screen('DrawText', window.onScreen, textStr, newRect(1), newRect(2), color);
+% =========================================================================
+
+
+% =========================================================================
+function writeHeaderToFile(D, fid)
+
+h = fieldnames(D);
+
+for i=1:length(h)
+    fprintf(fid, '%s\t', h{i});
+end
+fprintf(fid, '\n');
+% =========================================================================
+
+
+% =========================================================================
+function writeTrialToFile(D, trial, fid)
+
+try
+    h = fieldnames(D);
+    for i=1:length(h)
+        data = D.(h{i})(trial);
+        if isnumeric(data)
+            fprintf(fid, '%s\t', num2str(data));
+        elseif iscell(data)
+            fprintf(fid, '%s\t', char(data));
+        else
+            error('wrong format!')
+        end
+    end
+    fprintf(fid, '\n');
+catch
+    sca;
+    keyboard;
+end
+
+% =========================================================================
+
+
+% =========================================================================
+function [pressedKey pressedKeyCode RT] = getKeypressResponse(keys, tstart)
+% assumes that key struct, with all ok key values in the field
+% allKeys, also assumes 'q' quits
+
+pressedKey=0;
+while (1)
+    
+    [keyIsDown,secs,keyCode]=KbCheck(-1);
+    
+    if keyCode(keys(end))
+        pressedKey = find(keyCode(keys),1);
+        pressedKeyCode = find(keyCode,1);
+        RT=-1;
+        break;
+    end
+    
+    if any(keyCode(keys))
+        pressedKey = find(keyCode(keys),1);
+        pressedKeyCode = find(keyCode,1);
+        RT = GetSecs - tstart;
+        break;
+    end
+    
+end
+
+% =========================================================================
+
+function waitForKey;
+
+%---------------------------------------------
+% wait for key to start initiate trial
+%---------------------------------------------
+% make sure no key is currently pressed
+[keyIsDown,secs,keyCode]=KbCheck(-1);
+while(keyIsDown)
+    [keyIsDown,secs,keyCode]=KbCheck(-1);
+end
+% get keyquit
+while(1)
+    [keyIsDown,secs,keyCode]=KbCheck(-1);
+    if keyIsDown
+        break;
+    end
+end
+
+
+% =========================================================================
+
+function [R, G, B] = Lab2RGB(L, a, b)
+%LAB2RGB Convert an image from CIELAB to RGB
+%
+% function [R, G, B] = Lab2RGB(L, a, b)
+% function [R, G, B] = Lab2RGB(I)
+% function I = Lab2RGB(...)
+%
+% Lab2RGB takes L, a, and b double matrices, or an M x N x 3 double
+% image, and returns an image in the RGB color space.  Values for L are in
+% the range [0,100] while a* and b* are roughly in the range [-110,110].
+% If 3 outputs are specified, the values will be returned as doubles in the
+% range [0,1], otherwise the values will be uint8s in the range [0,255].
+%
+% This transform is based on ITU-R Recommendation BT.709 using the D65
+% white point reference. The error in transforming RGB -> Lab -> RGB is
+% approximately 10^-5.  
+%
+% See also RGB2LAB. 
+
+% By Mark Ruzon from C code by Yossi Rubner, 23 September 1997.
+% Updated for MATLAB 5 28 January 1998.
+% Fixed a bug in conversion back to uint8 9 September 1999.
+% Updated for MATLAB 7 30 March 2009.
+
+if nargin == 1
+  b = L(:,:,3);
+  a = L(:,:,2);
+  L = L(:,:,1);
+end
+
+% Thresholds
+T1 = 0.008856;
+T2 = 0.206893;
+
+[M, N] = size(L);
+s = M * N;
+L = reshape(L, 1, s);
+a = reshape(a, 1, s);
+b = reshape(b, 1, s);
+
+% Compute Y
+fY = ((L + 16) / 116) .^ 3;
+YT = fY > T1;
+fY = (~YT) .* (L / 903.3) + YT .* fY;
+Y = fY;
+
+% Alter fY slightly for further calculations
+fY = YT .* (fY .^ (1/3)) + (~YT) .* (7.787 .* fY + 16/116);
+
+% Compute X
+fX = a / 500 + fY;
+XT = fX > T2;
+X = (XT .* (fX .^ 3) + (~XT) .* ((fX - 16/116) / 7.787));
+
+% Compute Z
+fZ = fY - b / 200;
+ZT = fZ > T2;
+Z = (ZT .* (fZ .^ 3) + (~ZT) .* ((fZ - 16/116) / 7.787));
+
+% Normalize for D65 white point
+X = X * 0.950456;
+Z = Z * 1.088754;
+
+% XYZ to RGB
+MAT = [ 3.240479 -1.537150 -0.498535;
+       -0.969256  1.875992  0.041556;
+        0.055648 -0.204043  1.057311];
+
+RGB = max(min(MAT * [X; Y; Z], 1), 0);
+
+R = reshape(RGB(1,:), M, N);
+G = reshape(RGB(2,:), M, N);
+B = reshape(RGB(3,:), M, N); 
+
+if nargout < 2
+  R = uint8(round(cat(3,R,G,B) * 255));
+end
+
+% =========================================================================
+
+function [angle, radius] = xy2polar(h,v,centerH,centerV)
+
+% George Alvarez: alvarez@mit.edu
+% Version: 1.0
+% Last Modified: 09.29.2005 
+% [angle, radius] = xy2polar(1,1,250,250)
+% [angle, radius] = xy2polar([1 1],[1 1],[250 250],[250 250])
+% [angle, radius] = xy2polar([1 1; 1 1],[1 1; 1 1],[250 250; 250 250],[250 250; 250 250])
+
+% ********** Input Variables
+% h = current horizontal position
+% v = current vertical position
+% centerH = horizontal center position
+% centerv = vertical center position
+% **********  
+
+% ********** Return Values
+% angle     = angular position in degrees
+% radius    = radius in pixels
+% ********** 
+
+% ********** Purpose (what this function does)
+% given a horizontal and vertical position,
+% determine polar coordinates with respect to some center point
+% ********** 
+
+% ********** Outline
+% This function is broken down into 2 main steps
+% 1. Get Polar Coordinates
+% ********** 
+
+
+% 1. Get Polar Coordinates ************************************************
+
+hdist   = h-centerH;
+vdist   = v-centerV;
+hyp     = sqrt(hdist.*hdist + vdist.*vdist);
+
+% determine angle using cosine (hyp will never be zero)
+tempAngle = acos(hdist./hyp)./pi*180;
+
+% correct angle depending on quadrant
+tempAngle(find(hdist == 0 & vdist > 0)) = 90;
+tempAngle(find(hdist == 0 & vdist < 0)) = 270;
+tempAngle(find(vdist == 0 & hdist > 0)) = 0;
+tempAngle(find(vdist == 0 & hdist < 0)) = 180;
+tempAngle(find(hdist < 0 & vdist < 0))=360-tempAngle(find(hdist < 0 & vdist < 0));
+tempAngle(find(hdist > 0 & vdist < 0))=360-tempAngle(find(hdist > 0 & vdist < 0));
+
+angle   = tempAngle;
+radius  = hyp;
+
+% *************************************************************************
+
+
+
+
+
