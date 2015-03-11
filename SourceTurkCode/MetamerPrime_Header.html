@@ -212,10 +212,10 @@ function StartTrial() {
 	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);	
 	$('#startTrial').hide();
 	
-	trialJitter=500+(Math.random()*1000); // adds 300-800ms trial jitter
+	trialJitter=500+(Math.random()*500); // adds 500-1000ms trial jitter
 	setTimeout(function() {
 	}, trialJitter);	
-	
+// 	
 	setTimeout(function() {
 	    $('#t' + trialOrder[currentTrial+1] + '_filenameImg').show();
 		$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').show();
@@ -299,7 +299,9 @@ PLEASE ACCEPT THE HIT BEFORE STARTING !!!! <p> <p/>
 You'll see both a word and an image presented on the screen. Your task is to classify  AS QUICKLY AND ACCURATELY AS POSSIBLE the WORD as referring to an ANIMAL (s key) or an object (l key).
 Press the spacebar to start each trial. Good luck!
 
-<span style="font-size:8pt">Consent to Participate in Research:
+
+<span style="font-size:8pt"> <p> <p/>
+Consent to Participate in Research:
 
 By answering the following questions, you are participating in a study being performed by cognitive scientists in the Harvard University Psychology Department.  The purpose of this research is to examine human visual performance.
 By participating you are confirming that you are over 18 years of age and have normal or corrected-to-normal vision.  

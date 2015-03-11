@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-print "Content-Type: text/html"     # HTML is following
-print                               # blank line, end of headers
+# print "Content-Type: text/html"     # HTML is following
+# print                               # blank line, end of headers
 # print "<TITLE>CGI script output</TITLE>"
 # print "<H1>ALL OK </H1>"
 # print "Hello, world!"
@@ -115,13 +115,14 @@ def build_filename_target(cat, imageNumber):
     return "TextImageFiles/%s/%d.jpg" % (cat, imageNumber)
 
 
-def 
-put_header():
+def output_header():
     f = open('MetamerPrime_Header.html', 'r')
     print f.read().replace('#NUMTRIALS#', '80')
 
 def output_footer():
     f = open('MetamerPrime_Footer.html', 'r')
+    print f.read().replace('#NUMTRIALS#', '80')
+
 
 def listdir_nohidden(path):
 	return glob.glob(os.path.join(path, '*'))
