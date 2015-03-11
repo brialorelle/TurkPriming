@@ -1,0 +1,301 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="https://timbrady.org/turk/TimTurkTools.js"></script>
+
+<script>
+
+var currentTrial = -1;
+
+shuffle = function(o) { 
+	for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	return o;
+  };
+ 
+
+var myData = {};
+
+var subjectID=prompt('Please enter subject ID');
+
+var currentDate = new Date();
+var minutes=currentDate.getMinutes()
+var hours = currentDate.getHours()
+var day = currentDate.getDate();
+var month = currentDate.getMonth() + 1;
+var year = currentDate.getFullYear();
+var timeNow = hours+"-"+minutes+"-"+month+"-"+day+"-"+year;
+
+
+var trials = new Array();
+for (var i = 0; i < #NUMTRIALS#; i++)
+{ trials[i] = i+1; }
+var trialOrder = new Array();
+trialOrder = shuffle(trials);
+
+var trialNum = trialOrder[0];
+
+// this is one less than the total number of trials because you start with an index of zero, current trial is -1 before you start, 0 for the first trial, etc.
+var nTrials = #NUMTRIALS#; 
+var startTrialTime = 0;
+var trialRunning = false;
+
+$(document).ready(function() {
+	$('#submitButton').hide();
+	$(document).bind('keyup', 'space', StartTrial);
+	$(document).bind('keyup', 's', PressedAnimal);
+	$(document).bind('keyup', 'l', PressedObject);
+});
+
+// blockList=[];
+// checkBlockList(blockList,Sorry2)
+// 
+// function Sorry2() {
+//     alert('Sorry, you have already taken a hit too similar to the current one. Please return the HIT ! Thanks.')
+// }
+
+function PressedAnimal() {
+	if (!trialRunning) {
+		return;
+	}
+
+
+
+	var currentTime = new Date().getTime();
+	var RT = currentTime - startTrialTime;
+	$('#t' + trialOrder[currentTrial+1] + '_rt').val(RT);
+	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);
+	
+	 // what was the actual category
+	$('#t' + trialOrder[currentTrial+1] + '_response').val("animal");
+	$('#t' + trialOrder[currentTrial+1] + '_responseNum').val("1");
+	
+	// what was the actual category
+    wordCatInd = document.getElementById('t' + trialOrder[currentTrial+1] + '_wordCatInd').value;
+
+	
+    // save values in both html and in data structure (json)
+	if (wordCatInd==1) {
+		var Correct=1;
+		$('#t' + trialOrder[currentTrial+1] + '_correct').val("1");
+	}
+	else{
+		var Correct=0;
+		$('#t' + trialOrder[currentTrial+1] + '_correct').val("0");
+	};
+
+	// hide images
+	$('#t' + trialOrder[currentTrial+1] + '_filenameImg').hide();
+	$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').hide();
+	
+
+	
+	// get values to store
+	
+	var filename = document.getElementById('t' + trialOrder[currentTrial+1] + '_filename').value;
+    var TargetWord = document.getElementById('t' + trialOrder[currentTrial+1] + '_TargetWord').value;
+    var whichDisplay = document.getElementById('t' + trialOrder[currentTrial+1] + '_whichDisplay').value;
+    var trialType = document.getElementById('t' + trialOrder[currentTrial+1] + '_trialType').value;
+    var cat = document.getElementById('t' + trialOrder[currentTrial+1] + '_cat').value;
+    var item = document.getElementById('t' + trialOrder[currentTrial+1] + '_itemNum').value;
+    var ImageSide = document.getElementById('t' + trialOrder[currentTrial+1] + '_ImageScreenSide').value;
+    var WordSide = document.getElementById('t' + trialOrder[currentTrial+1] + '_wordScreenSide').value;
+    
+	
+	// save values to json
+	myData['trial' + currentTrial] = {
+           'date': timeNow,
+           'filename': filename,
+           'TargetWord': TargetWord,
+           'whichDisplay': whichDisplay,
+           'trialType':trialType,
+           'cat': cat,
+           'item': item,
+           'ImageSide': ImageSide,
+           'WordSide': WordSide,
+           'RT': RT,
+           'ResponseCat': 'Animal',
+           'ResponseCatInd': 1,
+           'Correct': Correct
+    };
+	
+	NextTrial(Correct);
+	SendToServer(subjectID, myData);
+}
+
+function PressedObject() {
+	if (!trialRunning) {
+		return;
+	}
+	
+	var currentTime = new Date().getTime();
+	var RT = currentTime - startTrialTime;
+	$('#t' + trialOrder[currentTrial+1] + '_rt').val(RT);
+	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);
+	
+	 // what was the actual category
+	$('#t' + trialOrder[currentTrial+1] + '_response').val("object");
+	$('#t' + trialOrder[currentTrial+1] + '_responseNum').val("2");
+	
+	// what was the actual category
+    wordCatInd = document.getElementById('t' + trialOrder[currentTrial+1] + '_wordCatInd').value;
+
+    // save values in both html and in data structure (json)
+	if (wordCatInd==2) {
+		var Correct=1;
+		$('#t' + trialOrder[currentTrial+1] + '_correct').val("1");
+	}
+	else{
+		var Correct=0;
+		$('#t' + trialOrder[currentTrial+1] + '_correct').val("0");
+	};
+
+	// hide images
+	$('#t' + trialOrder[currentTrial+1] + '_filenameImg').hide();
+	$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').hide();
+	
+
+	// get values to store
+	
+	var filename = document.getElementById('t' + trialOrder[currentTrial+1] + '_filename').value;
+    var TargetWord = document.getElementById('t' + trialOrder[currentTrial+1] + '_TargetWord').value;
+    var whichDisplay = document.getElementById('t' + trialOrder[currentTrial+1] + '_whichDisplay').value;
+    var trialType = document.getElementById('t' + trialOrder[currentTrial+1] + '_trialType').value;
+    var cat = document.getElementById('t' + trialOrder[currentTrial+1] + '_cat').value;
+    var item = document.getElementById('t' + trialOrder[currentTrial+1] + '_itemNum').value;
+    var ImageSide = document.getElementById('t' + trialOrder[currentTrial+1] + '_ImageScreenSide').value;
+    var WordSide = document.getElementById('t' + trialOrder[currentTrial+1] + '_wordScreenSide').value;
+    
+	
+	// save values to json
+	myData['trial' + currentTrial] = {
+           'date': timeNow,
+           'filename': filename,
+           'TargetWord': TargetWord,
+           'whichDisplay': whichDisplay,
+           'trialType':trialType,
+           'cat': cat,
+           'item': item,
+           'ImageSide': ImageSide,
+           'WordSide': WordSide,
+           'RT': RT,
+           'ResponseCat': 'Object',
+           'ResponseCatInd': 2,
+           'Correct': Correct
+    };
+	
+	NextTrial(Correct);
+	SendToServer(subjectID, myData);
+}
+
+function NextTrial(Correct) {
+	trialRunning = false;
+
+
+	if (Correct==0){
+	alert('Please be accurate, then fast!')
+	}
+
+	if (currentTrial+2 < nTrials) {
+		$('#startTrial').show();
+		currentTrial++;
+	} else {
+		$('#submitButton').show();
+		$('#thanks').show();
+		$('#experiment').hide();
+	}
+}
+
+function StartTrial() {
+	if (trialRunning) {
+		return;
+	}
+	
+    trialRunning = true;
+	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);	
+	$('#startTrial').hide();
+	
+	setTimeout(function() {
+	    $('#t' + trialOrder[currentTrial+1] + '_filenameImg').show();
+		$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').show();
+		startTrialTime = new Date().getTime();
+	}, 500);	
+	
+	
+
+}
+
+function SendToServer(id, curData) {
+  var dataToServer = {
+    'id': id,
+    'curData': JSON.stringify(curData)
+  };
+  
+  $.post("http://www.people.fas.harvard.edu/~brialong/turk/MetamerPrime/AnimReplicate/DataFiles/save.cgi",
+    dataToServer,
+    function(data) { console.log("success: " + data); }
+   ).fail(function(data) { console.log("error: " + data); });
+}
+
+</script>
+
+
+
+
+<style>
+#experiment {
+	font-family: Arial, Helvetica;
+	width: 1000px;
+	height: 800px;
+	margin: 30px;
+}
+
+#container {
+	position: relative;
+	background: gray;
+	width: 1000px;
+	height: 800px;
+	margin: 30px;
+}
+
+.displays0 {
+	position: absolute;
+	display: none;
+	top: 200px;
+	width: 400px;
+	height: 400px;
+	left: 0px;
+}
+
+.displays1 {
+	position: absolute;
+	display: none;
+	top: 200px;
+	width: 400px;
+	height: 400px;
+	right: 0px;
+}
+
+#startTrial {
+	position: absolute;
+	top: 180px;
+	left: 180px;
+	font-weight: bold;
+	color: white;
+	font-size: 16pt;
+}
+
+#thanks {
+	display: none;
+}
+</style>
+
+<div id="experiment">
+
+<h3>Word Categorization </h3>
+
+PLEASE ACCEPT THE HIT BEFORE STARTING !!!!
+You'll see both a word and an image presented on the screen. Your task is to classify  AS QUICKLY AND ACCURATELY AS POSSIBLE the WORD as referring to an ANIMAL (s key) or an object (l key).
+Press the spacebar to start each trial. Good luck!
+
+(consent statement filler)
+
+<div id="container">
+<a href="javascript:StartTrial()" id="startTrial">Press the spacebar to go on to the next trial</a>
