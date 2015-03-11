@@ -216,17 +216,18 @@ function StartTrial() {
     trialRunning = true;
 	$('#t' + trialOrder[currentTrial+1] + '_currentTrial').val(currentTrial+1);	
 	$('#startTrial').hide();
+	$('#fixation').show();
 	
-	trialJitter=500+(Math.random()*500); // adds 500-1000ms trial jitter
+	
+	trialJitter=1000+(Math.random()*500); // adds 1000-1500ms trial jitter with fixation cross
 	setTimeout(function() {
-	}, trialJitter);	
-// 	
-	setTimeout(function() {
+	    $('#fixation').hide();
 	    $('#t' + trialOrder[currentTrial+1] + '_filenameImg').show();
 		$('#t' + trialOrder[currentTrial+1] + '_TargetWordImg').show();
 		startTrialTime = new Date().getTime();
-	}, 500);	
-	
+	}, trialJitter);	
+// 	
+
 	
 
 }
@@ -294,6 +295,10 @@ function SendToServer(id, curData) {
 #thanks {
 	display: none;
 }
+
+#fixation{
+	display: none;
+}
 </style>
 
 <div id="experiment">
@@ -317,4 +322,11 @@ By continuing, you are confirming that you understand these instructions and con
 Once you start the HIT, please do not press enter and submit the HIT early.</span>
 
 <div id="container">
+
+<div id="fixation">
+<img src="http://people.fas.harvard.edu/~brialong/turk/MetamerPrime/AnimReplicate/Fixation.001.tiff">
+</div>
+
+
+
 <a href="javascript:StartTrial()" id="startTrial">Press the spacebar to go on to the next trial</a>
